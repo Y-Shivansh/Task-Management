@@ -6,7 +6,7 @@ import { verifyUserToken } from './middleware/user.middleware.js';
 
 const app = express();
 const corsOption = {
-    origin: "http://localhost:5174",
+    origin: ["http://localhost:5174", "https://op-task-manager.vercel.app"],
 }
 app.use(express.json());
 app.use(cors(corsOption));
