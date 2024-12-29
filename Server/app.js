@@ -11,6 +11,10 @@ const corsOption = {
 app.use(express.json());
 app.use(cors(corsOption));
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'UP' });
+});
+
 app.use("/api/v1/auth", userRoutes);
 app.use(verifyUserToken)
 app.use("/api/v1/tasks", taskRoutes);
