@@ -1,4 +1,4 @@
-import Task from '../models/task.model.js';
+import Task from '../models/Task.model.js';
 import { createTaskSchema, updateTaskSchema } from '../schemas/taskSchemas.js';
 
 // Get all tasks
