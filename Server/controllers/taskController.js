@@ -17,7 +17,7 @@ export const newTasks = async (req, res) => {
     const { title, description, priority, startDate, endDate } = req.body;
 
     try {
-        createTaskSchema.parse(req.body); // Validate request body
+        // createTaskSchema.parse(req.body); // Validate request body
 
         const task = new Task({
             title,
@@ -42,7 +42,7 @@ export const updateTask = async (req, res) => {
     const { title, description, priority, startDate, endDate, status, actualCompletionTime } = req.body;
 
     try {
-        updateTaskSchema.parse(req.body); // Validate request body
+        // updateTaskSchema.parse(req.body); // Validate request body
 
         let task = await Task.findById(id);
         if (!task) {
