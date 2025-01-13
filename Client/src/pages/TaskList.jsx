@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { TaskForm } from '../components/TaskForm';
 
 export const TaskList = () => {
@@ -94,14 +94,14 @@ export const TaskList = () => {
                     {showTaskForm ? 'Close Task Form' : 'Add Task'}
                 </button>
                 <div>
-                    <label for="priority" className="mr-2">Priority:</label>
+                    <label  htmlFor="priority" className="mr-2">Priority:</label>
                     <select id="priority" value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="mr-4 px-5">
                         <option value="">All</option>
                         {[1, 2, 3, 4, 5].map(priority => (
                             <option key={priority} value={priority}>{priority}</option>
                         ))}
                     </select>
-                    <label for="status" className="mr-2">Status:</label>
+                    <label htmlFor="status" className="mr-2">Status:</label>
                     <select id="status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                         <option value="">All</option>
                         {['pending', 'in-progress', 'completed', 'lapsed'].map(status => (
