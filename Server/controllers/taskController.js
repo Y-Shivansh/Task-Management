@@ -55,7 +55,7 @@ export const updateTask = async (req, res) => {
         task.startDate = startDate || task.startDate;
         task.endDate = endDate || task.endDate;
         task.status = status || task.status;
-        task.actualCompletionTime = actualCompletionTime || task.actualCompletionTime;
+        task.actualCompletionTime = status === 'completed' ? new Date() : task.actualCompletionTime;
 
         await task.save();
         res.status(200).json(task);
@@ -83,9 +83,9 @@ export const getMetrics = async (req, res) => {
   try {
     const userId = req.user.userId;
     const tasks = await Task.find({ userId }); 
-    const currentTime = new Date();
+    const currentTime = new Date(); // to calculate state
 
-    let priorityWiseStats = {}; // Store stats grouped by priority
+    let priorityWiseStats = {}; // An object to store statistics grouped by task priority
     let totalTasks = 0; 
     tasks.forEach(task => {
       const startTime = new Date(task.startDate);
@@ -94,21 +94,30 @@ export const getMetrics = async (req, res) => {
       // Total time to finish (for both completed and pending tasks)
       const totalTime = (endTime - startTime) / (1000 * 60 * 60); // Convert ms to hours
 
-      let timeLapsed = 0; 
-      let balanceTime = 0;
+      let timeLapsed = 0;  // Time lapsed for pending tasks.
+      let balanceTime = 0; // Remaining time to complete pending tasks.
 
-      if (task.status === "pending") {
-        // time lapsed for pending tasks
+      if (task.status === "pending") { 
         timeLapsed = currentTime < startTime ? 0 : (currentTime - startTime) / (1000 * 60 * 60);
-
-        // balance time for pending tasks
         balanceTime = currentTime > endTime ? 0 : (endTime - currentTime) / (1000 * 60 * 60);
       }
 
-      // Group stats by priority
+      // Group stats by priority: if priority of the task is not already in priorityWiseStats, initialize it with default values.
       if (!priorityWiseStats[task.priority]) {
-        priorityWiseStats[task.priority] = { pendingTasks: 0, totalTime: 0, timeLapsed: 0, balanceTime: 0, timeToFinish: 0, completedTasks: 0, inProgressTasks: 0, lapsedTasks: 0 };
+        priorityWiseStats[task.priority] = { pendingTasks: 0, totalTime: 0, timeLapsed: 0, balanceTime: 0, timeToFinish: 0, completedTasks: 0 };
       }
+
+      /*
+      ex:
+        priorityWiseStats[task.priority] = { 
+          pendingTasks: 1, (example value)
+          completedTasks: 0 
+          totalTime: 0, 
+          timeLapsed: 0, 
+          balanceTime: 0, 
+          timeToFinish: 0,
+      };
+      */
 
       // Accumulate stats
       priorityWiseStats[task.priority].totalTime += totalTime;
@@ -121,11 +130,7 @@ export const getMetrics = async (req, res) => {
         priorityWiseStats[task.priority].pendingTasks += 1;
       } else if (task.status === "completed") {
         priorityWiseStats[task.priority].completedTasks += 1;
-      } else if (task.status === "in-progress") {
-        priorityWiseStats[task.priority].inProgressTasks += 1;
-      } else if (task.status === "lapsed") {
-        priorityWiseStats[task.priority].lapsedTasks += 1;
-      }
+      } 
 
       totalTasks += 1;
     });
@@ -134,8 +139,8 @@ export const getMetrics = async (req, res) => {
     const completedTasks = tasks.filter(task => task.status === "completed");
     const completedTime = completedTasks.reduce((acc, task) => {
       const startTime = new Date(task.startDate);
-      const endTime = new Date(task.endDate);
-      return acc + (endTime - startTime) / (1000 * 60 * 60); // Convert ms to hours
+      const actualCompletionTime =  task.actualCompletionTime ? new Date(task.actualCompletionTime) : new Date();
+      return acc + (actualCompletionTime - startTime) / (1000 * 60 * 60); // Convert ms to hours
     }, 0);
     const avgTime = completedTasks.length > 0 ? completedTime / completedTasks.length : 0;
 
